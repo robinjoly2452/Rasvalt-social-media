@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nova_postgres
+    environment:
+      POSTGRES_USER: nova_user
+      POSTGRES_PASSWORD: nova_password_123
+      POSTGRES_DB: nova_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nova_user']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nova_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: nova_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nova_network
+
+  backend:
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
+    container_name: nova_backend
+    environment:
+      NODE_ENV: development
+      BACKEND_PORT: 3000
+      DATABASE_URL: postgresql://nova_user:nova_password_123@postgres:5432/nova_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your_super_secret_jwt_key_change_this_in_production_min_32_chars
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./packages/backend/src:/app/src
+    networks:
+      - nova_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+    container_name: nova_frontend
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./packages/frontend/src:/app/src
+    networks:
+      - nova_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  nova_network:
+    driver: bridge

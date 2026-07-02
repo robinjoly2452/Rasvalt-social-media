@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "install": "npm install --prefix packages/backend && npm install --prefix packages/frontend",
+    "build": "npm run build --prefix packages/backend && npm run build --prefix packages/frontend",
+    "start": "npm start --prefix packages/backend",
+    "dev": "concurrently \"npm run dev --prefix packages/backend\" \"npm run dev --prefix packages/frontend\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.1"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "nova-social-network",
+  "description": "Nova Social Network - Full Stack Application",
+  "repository": "https://github.com/robinjoly2452/nova-social-network",
+  "keywords": ["social", "network", "react", "express", "postgresql"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment",
+      "value": "production"
+    },
+    "JWT_SECRET": {
+      "description": "JWT secret key - generate a strong random string",
+      "generator": "secret"
+    },
+    "BACKEND_PORT": {
+      "description": "Backend port",
+      "value": "5000"
+    },
+    "DATABASE_URL": {
+      "description": "PostgreSQL database URL - set this to your Heroku Postgres URI",
+      "required": true
+    },
+    "REDIS_URL": {
+      "description": "Redis URL - set this to your Heroku Redis URI",
+      "required": true
+    },
+    "FRONTEND_URL": {
+      "description": "Frontend URL",
+      "required": true
+    },
+    "CORS_ORIGIN": {
+      "description": "CORS origin",
+      "required": true
+    }
+  },
+  "addons": [
+    "heroku-postgresql:standard-0",
+    "heroku-redis:premium-0"
+  ],
+  "scripts": {
+    "postbuild": "cd packages/backend && npm run prisma:migrate && npm run prisma:seed",
+    "start": "cd packages/backend && npm start"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

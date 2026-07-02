@@ -1,0 +1,2 @@
+web: node packages/backend/dist/index.js
+release: cd packages/backend && npx prisma migrate deploy
